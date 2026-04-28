@@ -1,1 +1,75 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 
+// 1. تعريف حجم المخزن (يمكنك تغييره للاختبار)
+#define SIZE 10 
+typedef struct {
+    char buffer[SIZE];
+    int head;   // مؤشر القراءة
+    int tail;   // مؤشر الكتابة
+    int count;  // عدد العناصر الحالية
+} CircularBuffer;
+void init(CircularBuffer *cb) {
+    cb->head = 0;
+    cb->tail = 0;
+    cb->count = 0;
+}
+bool isFull(CircularBuffer *cb) {
+    return cb->count == SIZE;
+}
+bool isEmpty(CircularBuffer *cb) {
+    return cb->count == 0;
+}
+void write(CircularBuffer *cb, char data) {
+    if (isFull(cb)) {
+        printf("\n[Error] Buffer Overflow! Cannot write: %c\n", data);
+        return;
+    }
+    cb->buffer[cb->tail] = data;
+    cb->tail = (cb->tail + 1) % SIZE; // العودة للبداية إذا وصلنا للنهاية
+    cb->count++;
+}
+char read(CircularBuffer *cb) {
+    if (isEmpty(cb)) {
+        printf("\n[Error] Buffer Underflow!\n");
+        return '\0';
+    }
+    char data = cb->buffer[cb->head];
+    cb->head = (cb->head + 1) % SIZE; // العودة للبداية
+    cb->count--;
+    return data;
+}
+int main() {
+    CircularBuffer cb;
+    init(&cb);
+
+    char name[100];
+    char suffix[] = "CE-ESY";
+
+    // طلب الاسم من المستخدم
+    printf("Enter your name: ");
+    scanf("%99s", name);
+
+    // دمج السلسلة المطلوبة
+    strcat(name, suffix);
+    printf("Processing: %s\n", name);
+
+    // كتابة البيانات في المخزن
+    for (int i = 0; i < strlen(name); i++) {
+        write(&cb, name[i]);
+    }
+
+    // القراءة من المخزن وعرض النتيجة
+    printf("Result from Buffer: ");
+    while (!isEmpty(&cb)) {
+        printf("%c", read(&cb));
+    }
+
+    // التأكد من أن المخزن فارغ
+    if (isEmpty(&cb)) {
+        printf("\nBuffer is now empty.\n");
+    }
+
+    return 0;
+}
